@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#F8F9FA" />
+    <meta name="description" content="Biopeak event check-in — get the CXO brochure." />
+    <title>Biopeak</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/png" href="./assets/logo.png" />
+  </head>
+  <body>
+    <div id="splash" class="splash" aria-hidden="false">
+      <div id="lottie" class="splash__lottie" role="img" aria-label="Biopeak"></div>
+    </div>
+
+    <main id="app" class="app" hidden>
+      <section class="panel" aria-labelledby="form-title">
+        <img
+          class="panel__logo"
+          src="./assets/logo.png"
+          alt="Biopeak"
+          width="180"
+          height="auto"
+        />
+        <h1 id="form-title" class="panel__title">Get the CXO brochure</h1>
+        <p class="panel__lead">Enter your details once. We will start the download right away.</p>
+
+        <form id="lead-form" class="form" novalidate>
+          <div class="hp" aria-hidden="true">
+            <label for="company">Company</label>
+            <input type="text" id="company" name="company" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <div class="field">
+            <label for="name">Name</label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              autocomplete="name"
+              maxlength="80"
+              required
+              placeholder="Your full name"
+            />
+            <p class="field__error" id="name-error" hidden></p>
+          </div>
+
+          <div class="field">
+            <label for="phone">Phone number</label>
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              autocomplete="tel"
+              inputmode="tel"
+              maxlength="20"
+              required
+              placeholder="+91 98765 43210"
+            />
+            <p class="field__error" id="phone-error" hidden></p>
+          </div>
+
+          <button type="submit" class="btn" id="submit-btn">Get brochure</button>
+        </form>
+
+        <div id="success" class="success" hidden role="status" aria-live="polite">
+          <p class="success__badge">You are checked in</p>
+          <p class="success__text" id="success-text">
+            Your brochure download should start automatically.
+          </p>
+          <a class="success__link" id="pdf-link" href="./assets/CXO%20brochure.pdf" download="CXO brochure.pdf">
+            Download again
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,5 @@
+{
+  "framework": "vite",
+  "entry": "index.html",
+  "register": "product"
+}
