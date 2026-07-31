@@ -151,8 +151,7 @@ function showSuccess(message) {
 
 async function postToSheet({ name, phone }) {
   if (!GAS_URL) {
-    console.warn('VITE_GAS_URL / GAS_URL not set — skipping sheet write')
-    return { ok: true, skipped: true }
+    throw new Error('VITE_GAS_URL missing — sheet write skipped')
   }
 
   // text/plain avoids CORS preflight with Apps Script web apps
@@ -167,11 +166,18 @@ async function postToSheet({ name, phone }) {
   })
 
   const text = await res.text()
+  let data
   try {
-    return JSON.parse(text)
+    data = JSON.parse(text)
   } catch {
-    return { ok: res.ok, raw: text }
+    throw new Error('Apps Script returned non-JSON (bad URL or not deployed as web app)')
   }
+
+  if (!data || data.ok !== true) {
+    throw new Error(data?.error || 'Sheet write failed')
+  }
+
+  return data
 }
 
 function showAlreadyDone() {
@@ -213,6 +219,8 @@ formEl.addEventListener('submit', async (event) => {
     const result = await postToSheet(data)
     markSubmitted(data.phone)
     downloadBrochure()
+    const errNote = document.getElementById('submit-error')
+    if (errNote) errNote.remove()
 
     if (result?.duplicate) {
       showSuccess(
@@ -223,12 +231,19 @@ formEl.addEventListener('submit', async (event) => {
     }
   } catch (err) {
     console.error(err)
-    // Still deliver brochure if network/sheet fails
-    markSubmitted(data.phone)
     downloadBrochure()
-    showSuccess(
-      'Brochure download started. If the sheet did not update, tell a Biopeak host.',
-    )
+    submitBtn.disabled = false
+    submitBtn.textContent = 'Get brochure'
+    let errNote = document.getElementById('submit-error')
+    if (!errNote) {
+      errNote = document.createElement('p')
+      errNote.className = 'field__error'
+      errNote.id = 'submit-error'
+      formEl.appendChild(errNote)
+    }
+    errNote.hidden = false
+    errNote.textContent =
+      'Brochure started, but sheet save failed. Check Apps Script URL / deploy, then submit again.'
   } finally {
     submitting = false
   }

@@ -10,7 +10,7 @@
  * 4. Copy the /exec URL into .env as VITE_GAS_URL=...
  */
 
-var SHEET_NAME = 'Sheet1' // change if your tab is renamed
+var SHEET_NAME = 'Leads' // change if your tab is renamed
 
 function doGet() {
   return json_({ ok: true, service: 'biopeak-event' })
