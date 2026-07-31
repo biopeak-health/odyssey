@@ -31,7 +31,12 @@ jobs:
       - name: Build
         env:
           VITE_GAS_URL: ${{ secrets.VITE_GAS_URL }}
-        run: npm run build
+        run: |
+          if [ -z "$VITE_GAS_URL" ]; then
+            echo "::error::VITE_GAS_URL secret is empty. Add it under Settings → Secrets → Actions, then re-run."
+            exit 1
+          fi
+          npm run build
 
       - uses: actions/upload-pages-artifact@v3
         with:
