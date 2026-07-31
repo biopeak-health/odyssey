@@ -18,7 +18,7 @@ Light healthcare-tech product UI. Airy grey shell, white form surface, muted cor
 | `--success-bg` | `#E6F4EA` | Success banner |
 | `--success-ink` | `#2E7D32` | Success text |
 | `--border` | `#E5E7EB` | Input borders |
-| `--splash-bg` | `#000000` | Splash only |
+| `--splash-bg` | `#D5756C` (accent) | Splash only |
 
 Use OKLCH equivalents in CSS where practical; hex above is source of truth from product screenshot.
 

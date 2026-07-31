@@ -9,7 +9,7 @@
   --success-bg: #e6f4ea;
   --success-ink: #2e7d32;
   --border: #e5e7eb;
-  --splash-bg: #000000;
+  --splash-bg: var(--accent);
   --radius-panel: 1.25rem;
   --radius-input: 0.75rem;
   --shadow: 0 8px 30px rgb(26 26 26 / 0.06);

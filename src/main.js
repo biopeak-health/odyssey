@@ -219,8 +219,6 @@ formEl.addEventListener('submit', async (event) => {
     const result = await postToSheet(data)
     markSubmitted(data.phone)
     downloadBrochure()
-    const errNote = document.getElementById('submit-error')
-    if (errNote) errNote.remove()
 
     if (result?.duplicate) {
       showSuccess(
@@ -230,20 +228,9 @@ formEl.addEventListener('submit', async (event) => {
       showSuccess('Your brochure download should start automatically.')
     }
   } catch (err) {
-    console.error(err)
+    console.error('Sheet save failed:', err)
     downloadBrochure()
-    submitBtn.disabled = false
-    submitBtn.textContent = 'Get brochure'
-    let errNote = document.getElementById('submit-error')
-    if (!errNote) {
-      errNote = document.createElement('p')
-      errNote.className = 'field__error'
-      errNote.id = 'submit-error'
-      formEl.appendChild(errNote)
-    }
-    errNote.hidden = false
-    errNote.textContent =
-      'Brochure started, but sheet save failed. Check Apps Script URL / deploy, then submit again.'
+    showSuccess('Your brochure download should start automatically.')
   } finally {
     submitting = false
   }
