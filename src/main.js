@@ -123,8 +123,8 @@ function validate() {
     setError(nameError, nameInput, '')
   }
 
-  if (!phone || phone.length < 8 || phone.length > 15) {
-    setError(phoneError, phoneInput, 'Enter a valid phone number.')
+  if (!phone || phone.length !== 10) {
+    setError(phoneError, phoneInput, 'Enter a 10-digit phone number.')
     ok = false
   } else {
     setError(phoneError, phoneInput, '')

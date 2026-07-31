@@ -58,10 +58,11 @@
               name="phone"
               type="tel"
               autocomplete="tel"
-              inputmode="tel"
-              maxlength="20"
+              inputmode="numeric"
+              maxlength="10"
+              pattern="[0-9]{10}"
               required
-              placeholder="+91 98765 43210"
+              placeholder="9876543210"
             />
             <p class="field__error" id="phone-error" hidden></p>
           </div>
