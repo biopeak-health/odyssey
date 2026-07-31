@@ -2,10 +2,9 @@ import './styles.css'
 import lottie from 'lottie-web'
 import {
   GAS_URL,
-  BROCHURE_PATH,
   SPLASH_PATH,
-  STORAGE_PREFIX,
   RATE_LIMIT_MS,
+  BROCHURE_FILENAME,
 } from './config.js'
 
 const splashEl = document.getElementById('splash')
@@ -24,8 +23,7 @@ const pdfLink = document.getElementById('pdf-link')
 
 let submitting = false
 let lastSubmitAt = 0
-
-pdfLink.href = BROCHURE_PATH
+let brochureObjectUrl = ''
 
 function prefersReducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -53,6 +51,9 @@ async function playSplash() {
     loop: false,
     autoplay: true,
     path: SPLASH_PATH,
+    rendererSettings: {
+      preserveAspectRatio: 'xMidYMid meet',
+    },
   })
 
   const done = () => {
@@ -73,26 +74,6 @@ async function playSplash() {
 
 function normalizePhone(raw) {
   return String(raw || '').replace(/\D/g, '')
-}
-
-function storageKey(phone) {
-  return `${STORAGE_PREFIX}${phone}`
-}
-
-function alreadySubmitted(phone) {
-  try {
-    return localStorage.getItem(storageKey(phone)) === '1'
-  } catch {
-    return false
-  }
-}
-
-function markSubmitted(phone) {
-  try {
-    localStorage.setItem(storageKey(phone), '1')
-  } catch {
-    /* ignore quota / private mode */
-  }
 }
 
 function setError(el, input, message) {
@@ -133,10 +114,34 @@ function validate() {
   return ok ? { name, phone, phoneRaw } : null
 }
 
-function downloadBrochure() {
+function base64ToBlob(base64, mime) {
+  const binary = atob(base64)
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i)
+  }
+  return new Blob([bytes], { type: mime })
+}
+
+function downloadBrochureFromBase64(base64, filename = BROCHURE_FILENAME) {
+  if (!base64) {
+    throw new Error('Brochure missing from response')
+  }
+
+  if (brochureObjectUrl) {
+    URL.revokeObjectURL(brochureObjectUrl)
+  }
+
+  const blob = base64ToBlob(base64, 'application/pdf')
+  brochureObjectUrl = URL.createObjectURL(blob)
+
+  pdfLink.href = brochureObjectUrl
+  pdfLink.download = filename
+  pdfLink.hidden = false
+
   const a = document.createElement('a')
-  a.href = BROCHURE_PATH
-  a.download = 'CXO brochure.pdf'
+  a.href = brochureObjectUrl
+  a.download = filename
   a.rel = 'noopener'
   document.body.appendChild(a)
   a.click()
@@ -147,6 +152,12 @@ function showSuccess(message) {
   formEl.hidden = true
   successEl.hidden = false
   successText.textContent = message
+}
+
+function showSubmitError(message) {
+  submitBtn.disabled = false
+  submitBtn.textContent = 'Get brochure'
+  setError(phoneError, phoneInput, message)
 }
 
 async function postToSheet({ name, phone }) {
@@ -177,14 +188,11 @@ async function postToSheet({ name, phone }) {
     throw new Error(data?.error || 'Sheet write failed')
   }
 
-  return data
-}
+  if (!data.brochure) {
+    throw new Error('Brochure missing from response')
+  }
 
-function showAlreadyDone() {
-  formEl.hidden = true
-  successEl.hidden = false
-  successText.textContent =
-    'This phone is already checked in on this device. You can download the brochure again below.'
+  return data
 }
 
 formEl.addEventListener('submit', async (event) => {
@@ -196,31 +204,26 @@ formEl.addEventListener('submit', async (event) => {
   if (now - lastSubmitAt < RATE_LIMIT_MS) return
   lastSubmitAt = now
 
-  // Honeypot
+  // Honeypot — fake success, no brochure
   if (companyInput.value.trim()) {
     showSuccess('Thanks — your brochure download should start automatically.')
-    downloadBrochure()
+    pdfLink.hidden = true
     return
   }
 
   const data = validate()
   if (!data) return
 
-  if (alreadySubmitted(data.phone)) {
-    showAlreadyDone()
-    return
-  }
-
   submitting = true
   submitBtn.disabled = true
-  submitBtn.textContent = 'Sending…'
+  submitBtn.textContent = 'Downloading…'
+  setError(phoneError, phoneInput, '')
 
   try {
     const result = await postToSheet(data)
-    markSubmitted(data.phone)
-    downloadBrochure()
+    downloadBrochureFromBase64(result.brochure, result.filename || BROCHURE_FILENAME)
 
-    if (result?.duplicate) {
+    if (result.duplicate) {
       showSuccess(
         'You were already on the list. Your brochure download should start automatically.',
       )
@@ -229,8 +232,7 @@ formEl.addEventListener('submit', async (event) => {
     }
   } catch (err) {
     console.error('Sheet save failed:', err)
-    downloadBrochure()
-    showSuccess('Your brochure download should start automatically.')
+    showSubmitError('Could not check you in. Please try again.')
   } finally {
     submitting = false
   }

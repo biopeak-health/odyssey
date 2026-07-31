@@ -1,6 +1,6 @@
 # Biopeak Event Landing
 
-QR → splash → name/phone → brochure download + Google Sheet row.
+QR → splash → name/phone → Google Sheet row + brochure download (base64 from Apps Script).
 
 ## Quick start
 
@@ -24,18 +24,22 @@ Repo: [github.com/biopeak-health/odyssey](https://github.com/biopeak-health/odys
 
 ## Apps Script
 
-Follow [apps-script/README.md](apps-script/README.md) for Sheet + web app setup.
+Follow [apps-script/README.md](apps-script/README.md):
+
+- Sheet + web app deploy
+- Upload brochure to Drive + set `BROCHURE_FILE_ID` script property
+- Redeploy web app after `Code.gs` changes
+
+PDF lives in [`apps-script/CXO brochure.pdf`](apps-script/CXO%20brochure.pdf) for upload only — **not** served by Pages.
 
 ## Smoke-test checklist
 
 - [ ] Splash Lottie plays, then form appears
 - [ ] Empty submit shows field errors
-- [ ] Valid submit downloads `CXO brochure.pdf`
-- [ ] Sheet gains a Time / Name / Phone row
-- [ ] Same phone again → no second row; UI still shows success / download link
+- [ ] Non-10-digit phone rejected on form
+- [ ] Valid submit writes Sheet row **and** downloads brochure
+- [ ] Direct `/assets/CXO brochure.pdf` URL is 404 (PDF not public)
+- [ ] Same phone again → no second row; brochure still downloads
+- [ ] Sheet/GAS failure → error on form, **no** brochure download
 - [ ] Double-tap Submit does not create two rows
 - [ ] `prefers-reduced-motion`: splash skipped, form shows
-
-## Note on brochure size
-
-Brochure lives at `public/assets/CXO brochure.pdf` (~1.8MB).
